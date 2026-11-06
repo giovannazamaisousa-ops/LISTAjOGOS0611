@@ -1,0 +1,446 @@
+/* ===== Tokens ===== */
+:root {
+  --fundo: #150520;
+  --painel: #4b1b61;
+  --tinta: #b05dd1;
+  --tinta-suave: #ddbcec;
+  --linha: #a3ecec;
+  --azul: #57e4b5;
+  --azul-escuro: #2f1341;
+  --verde: #2f9483;
+  --verde-claro: #8dedf0;
+  --ambar: #1a087e;
+  --ambar-claro: #5af5e0;
+  --fonte-titulo: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --fonte-texto: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+
+  --raio: 10px;
+}
+
+/* ===== Base ===== */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--tinta);
+  font-family: var(--fonte-texto);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+h1, h2, h3 {
+  font-family: var(--fonte-titulo);
+  line-height: 1.15;
+  margin: 0;
+}
+
+p { margin: 0; }
+ul { list-style: none; margin: 0; padding: 0; }
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+:focus-visible {
+  outline: 3px solid var(--azul);
+  outline-offset: 2px;
+}
+
+/* ===== Topo ===== */
+.topo {
+  background: var(--tinta);
+  color: #9bedf3;
+  padding: 2rem 1.25rem 1.75rem;
+}
+
+.topo h1 {
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.topo-sub {
+  max-width: 1100px;
+  margin: 0.5rem auto 0;
+  color: #b9c0e0;
+}
+
+/* ===== Página ===== */
+.pagina {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+/* ===== Progresso (elemento de destaque) ===== */
+.progresso {
+  background: var(--painel);
+  border-radius: var(--raio);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--linha);
+}
+
+.progresso h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.progresso-resumo {
+  margin-bottom: 0.75rem;
+  color: var(--tinta-suave);
+}
+
+.progresso-resumo strong {
+  color: var(--tinta);
+  font-size: 1.15rem;
+}
+
+/* Cada segmento representa um jogo */
+.barra {
+  display: flex;
+  gap: 3px;
+  height: 2.25rem;
+  padding: 4px;
+  background: var(--fundo);
+  border: 2px solid var(--tinta);
+  border-radius: 8px;
+}
+
+.seg {
+  flex: 1 1 0;
+  min-width: 2px;
+  background: #2d093d;
+  border: 1px solid var(--linha);
+  border-radius: 3px;
+}
+
+.seg.ok {
+  background: var(--verde);
+  border-color: var(--verde);
+}
+
+.stats-grupos {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.stats-grupos h3 {
+  font-size: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.ranking li {
+  display: grid;
+  grid-template-columns: minmax(70px, 120px) 1fr 2rem;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.25rem 0;
+}
+
+.ranking-nome {
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ranking-barra {
+  height: 0.6rem;
+  background: var(--fundo);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.ranking-barra i {
+  display: block;
+  height: 100%;
+  background: var(--azul);
+  border-radius: 99px;
+}
+
+.ranking-qtd {
+  text-align: right;
+  font-weight: 600;
+}
+
+/* ===== Colunas ===== */
+.colunas {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.painel {
+  background: var(--painel);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: 1.5rem;
+}
+
+.painel h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* ===== Formulários ===== */
+label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin: 0.9rem 0 0.3rem;
+}
+
+input[type="text"],
+input[type="search"] {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  font: inherit;
+  color: var(--tinta);
+  background: #250838;
+  border: 2px solid var(--linha);
+  border-radius: 8px;
+}
+
+input::placeholder { color: #545858; }
+
+input[type="text"]:hover,
+input[type="search"]:hover { border-color: #7cf6ff; }
+
+input[type="text"]:focus,
+input[type="search"]:focus {
+  border-color: var(--azul);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(109, 245, 255, 0.2);
+}
+
+/* ===== Botões ===== */
+.btn {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+  color: var(--tinta);
+  background: #27083b;
+  border: 2px solid var(--tinta);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn:hover { background: var(--fundo); }
+
+.btn-principal {
+  width: 100%;
+  margin-top: 1.25rem;
+  color: #5c3885;
+  background: var(--azul);
+  border-color: var(--azul);
+}
+
+.btn-principal:hover {
+  background: var(--azul-escuro);
+  border-color: var(--azul-escuro);
+}
+
+.btn-pequeno {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* ===== Busca ===== */
+.busca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.busca input { flex: 1 1 200px; width: auto; }
+
+.link-limpar {
+  color: var(--azul-escuro);
+  font-size: 0.95rem;
+}
+
+/* ===== Lista de jogos ===== */
+.lista { border-top: 1px solid var(--linha); }
+
+.jogo {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "info status"
+    "info acao";
+  gap: 0.5rem 1rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--linha);
+}
+
+.jogo-info { grid-area: info; min-width: 0; }
+.jogo .status { grid-area: status; justify-self: end; }
+.jogo form { grid-area: acao; justify-self: end; }
+
+.jogo-titulo {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: 1.15rem;
+  overflow-wrap: anywhere;
+}
+
+.jogo.concluido .jogo-titulo {
+  color: var(--tinta-suave);
+}
+
+.jogo-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.tag {
+  font-size: 0.85rem;
+  padding: 0.1rem 0.55rem;
+  background: var(--fundo);
+  border-radius: 99px;
+  color: var(--tinta-suave);
+}
+
+.status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+.status.ok { background: var(--verde-claro); color: var(--verde); }
+.status.pendente { background: var(--ambar-claro); color: var(--ambar); }
+
+/* ===== Mensagens vazias ===== */
+.vazio {
+  padding: 1rem 0;
+  color: var(--tinta-suave);
+}
+
+/* ===== Rodapé ===== */
+.rodape {
+  padding: 1.5rem 1.25rem 2rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--tinta-suave);
+}
+
+/* ===== Telas maiores ===== */
+@media (min-width: 640px) {
+  .stats-grupos { grid-template-columns: 1fr 1fr; }
+
+  .jogo {
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas: "info status acao";
+  }
+}
+
+@media (min-width: 900px) {
+  .colunas { grid-template-columns: 320px 1fr; }
+  .cadastro { position: sticky; top: 1rem; }
+}
+
+/* ===== Acessibilidade ===== */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* ===== Mensagens de retorno (cadastro e conclusão) ===== */
+.mensagem {
+  margin: 0 0 1.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--verde-claro);
+  color: var(--verde);
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.mensagem.erro {
+  background: var(--ambar-claro);
+  color: var(--ambar);
+}
+
+.mensagem:empty { display: none; }
+
+.resultado {
+  margin-bottom: 0.75rem;
+  color: var(--tinta-suave);
+}
+
+.jogo-numero {
+  color: var(--tinta-suave);
+  margin-right: 0.35rem;
+}
+
+/* ===== Foto do jogo ===== */
+input[type="file"] {
+  width: 100%;
+  font: inherit;
+  color: var(--tinta-suave);
+}
+
+.previa {
+  display: block;
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  margin-top: 0.6rem;
+  border: 2px solid var(--linha);
+  border-radius: 8px;
+}
+
+.previa[hidden] { display: none; }
+
+/* A lista ganha uma coluna para a foto */
+.jogo {
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    "foto info status"
+    "foto info acao";
+}
+
+.jogo-foto {
+  grid-area: foto;
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+}
+
+/* Sem foto: mostra a inicial do nome */
+.jogo-foto.sem-foto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--fundo);
+  color: var(--tinta-suave);
+  font-family: var(--fonte-titulo);
+  font-weight: 800;
+  font-size: 1.75rem;
+}
+
+@media (min-width: 640px) {
+  .jogo {
+    grid-template-columns: auto 1fr auto auto;
+    grid-template-areas: "foto info status acao";
+  }
+}

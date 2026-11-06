@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catálogo de Jogos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topo">
+    <h1>Catálogo de Jogos</h1>
+    <p class="topo-sub">Cadastre, pesquise e acompanhe o que você já terminou.</p>
+  </header>
+
+  <main class="pagina">
+
+    <!-- Mensagens: sucesso ao cadastrar, parabéns ao concluir, erros -->
+    <p id="mensagem" class="mensagem" role="status"></p>
+
+    <!-- GERAR ESTATÍSTICAS -->
+    <section class="progresso">
+      <h2>Estatísticas do catálogo</h2>
+      <div id="stats"></div>
+    </section>
+
+    <div class="colunas">
+
+      <!-- CADASTRAR NOVO JOGO -->
+      <section class="painel cadastro">
+        <h2>Cadastrar novo jogo</h2>
+        <form id="form-cadastro">
+          <label for="nome">Nome do jogo</label>
+          <input type="text" id="nome" maxlength="80" placeholder="Ex.: Hollow Knight">
+
+          <label for="plataforma">Plataforma</label>
+          <input type="text" id="plataforma" list="plataformas" maxlength="30" placeholder="Ex.: PC, PS5, Switch, Xbox">
+          <datalist id="plataformas">
+            <option value="PC">
+            <option value="PS5">
+            <option value="Switch">
+            <option value="Xbox">
+          </datalist>
+
+          <label for="genero">Gênero</label>
+          <input type="text" id="genero" list="generos" maxlength="30" placeholder="Ex.: RPG, Ação, FPS">
+          <datalist id="generos">
+            <option value="RPG">
+            <option value="Ação">
+            <option value="FPS">
+            <option value="Aventura">
+          </datalist>
+
+          <label for="foto">Foto do jogo (opcional)</label>
+          <input type="file" id="foto" accept="image/*">
+          <img id="previa" class="previa" alt="Prévia da foto escolhida" hidden>
+
+          <button type="submit" class="btn btn-principal">Cadastrar jogo</button>
+        </form>
+      </section>
+
+      <!-- LISTAR E PESQUISAR JOGOS -->
+      <section class="painel">
+        <h2>Lista de jogos</h2>
+
+        <div class="busca">
+          <label for="busca" class="sr-only">Pesquisar títulos</label>
+          <input type="search" id="busca" placeholder="Digite o nome ou parte do nome">
+        </div>
+
+        <div id="lista"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="rodape">
+    <p>Etapa 2 do desafio “Um Sistema, Duas Plataformas”.</p>
+  </footer>
+
+  <script>
+    // Lista principal dos jogos (fica salva no navegador)
+    let catalogo = [];
+    try { catalogo = JSON.parse(localStorage.getItem("catalogo")) || []; } catch (e) {}
+    let termo = "";
+
+    const $ = (id) => document.getElementById(id);
+
+    // Evita que texto digitado vire código HTML
+    const esc = (t) => String(t).replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    function salvar() {
+      try {
+        localStorage.setItem("catalogo", JSON.stringify(catalogo));
+        return true;
+      } catch (e) {
+        return false; // espaço do navegador cheio
+      }
+    }
+
+    // ----- Foto: reduz a imagem para caber no armazenamento do navegador -----
+    function redimensionar(arquivo, maximo = 300) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(arquivo);
+        const img = new Image();
+        img.onload = () => {
+          const escala = Math.min(1, maximo / Math.max(img.width, img.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(img.width * escala);
+          canvas.height = Math.round(img.height * escala);
+          canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+          URL.revokeObjectURL(url);
+          resolve(canvas.toDataURL("image/jpeg", 0.8));
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(); };
+        img.src = url;
+      });
+    }
+
+    // Prévia da foto escolhida, antes de cadastrar
+    $("foto").addEventListener("change", (e) => {
+      const arquivo = e.target.files[0];
+      if (arquivo) {
+        $("previa").src = URL.createObjectURL(arquivo);
+        $("previa").hidden = false;
+      } else {
+        $("previa").hidden = true;
+      }
+    });
+
+    // Foto do jogo na lista (ou a inicial do nome, se não tiver foto)
+    function fotoHtml(jogo) {
+      return jogo.foto
+        ? `<img class="jogo-foto" src="${esc(jogo.foto)}" alt="Foto de ${esc(jogo.nome)}">`
+        : `<div class="jogo-foto sem-foto" aria-hidden="true">${esc(jogo.nome.charAt(0).toUpperCase())}</div>`;
+    }
+
+    function mostrar(texto, erro = false) {
+      const m = $("mensagem");
+      m.textContent = texto;
+      m.className = "mensagem" + (erro ? " erro" : "");
+    }
+
+    // ----- 1. Cadastrar jogo -----
+    $("form-cadastro").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const nome = $("nome").value.trim();
+      if (!nome) {
+        mostrar("O nome não pode estar vazio!", true);
+        return;
+      }
+
+      let foto = "";
+      const arquivo = $("foto").files[0];
+      if (arquivo) {
+        try {
+          foto = await redimensionar(arquivo);
+        } catch (erro) {
+          mostrar("Não foi possível ler essa foto. Escolha um arquivo de imagem.", true);
+          return;
+        }
+      }
+
+      catalogo.push({
+        nome,
+        plataforma: $("plataforma").value.trim(),
+        genero: $("genero").value.trim(),
+        foto,
+        concluido: false,
+      });
+
+      if (!salvar()) {
+        catalogo.pop();
+        mostrar("Sem espaço para salvar. Tente uma foto menor ou remova jogos antigos.", true);
+        return;
+      }
+
+      e.target.reset();
+      $("previa").hidden = true;
+      mostrar(`Sucesso! “${nome}” foi cadastrado com sucesso.`);
+      desenhar();
+    });
+
+    // ----- 3. Marcar como concluído -----
+    $("lista").addEventListener("click", (e) => {
+      const botao = e.target.closest("button[data-i]");
+      if (!botao) return;
+      const jogo = catalogo[Number(botao.dataset.i)];
+      jogo.concluido = true;
+      salvar();
+      mostrar(`Parabéns! “${jogo.nome}” marcado como concluído.`);
+      desenhar();
+    });
+
+    // ----- 4. Pesquisar títulos (filtra enquanto digita) -----
+    $("busca").addEventListener("input", (e) => {
+      termo = e.target.value.trim().toLowerCase();
+      desenharLista();
+    });
+
+    // ----- 2. Listar jogos -----
+    function desenharLista() {
+      if (catalogo.length === 0) {
+        $("lista").innerHTML = '<p class="vazio">Nenhum jogo cadastrado no catálogo.</p>';
+        return;
+      }
+
+      // Guarda o número original de cada jogo (como no menu do CMD)
+      const achados = catalogo
+        .map((jogo, i) => ({ jogo, i }))
+        .filter(({ jogo }) => jogo.nome.toLowerCase().includes(termo));
+
+      if (achados.length === 0) {
+        $("lista").innerHTML = '<p class="vazio">Nenhum jogo encontrado com esse termo.</p>';
+        return;
+      }
+
+      const resumo = termo
+        ? `<p class="resultado">Foram encontrados ${achados.length} jogo(s):</p>`
+        : "";
+
+      const itens = achados.map(({ jogo, i }) => `
+        <li class="jogo ${jogo.concluido ? "concluido" : ""}">
+          ${fotoHtml(jogo)}
+          <div class="jogo-info">
+            <p class="jogo-titulo"><span class="jogo-numero">${i + 1}.</span>${esc(jogo.nome)}</p>
+            <p class="jogo-meta">
+              ${jogo.plataforma ? `<span class="tag">${esc(jogo.plataforma)}</span>` : ""}
+              ${jogo.genero ? `<span class="tag">${esc(jogo.genero)}</span>` : ""}
+            </p>
+          </div>
+          <span class="status ${jogo.concluido ? "ok" : "pendente"}">${jogo.concluido ? "✔ Concluído" : "Não concluído"}</span>
+          ${jogo.concluido ? "" : `<button type="button" class="btn btn-pequeno" data-i="${i}">Marcar como concluído</button>`}
+        </li>`).join("");
+
+      $("lista").innerHTML = resumo + '<ul class="lista">' + itens + "</ul>";
+    }
+
+    // ----- 5. Gerar estatísticas -----
+    function desenharStats() {
+      const total = catalogo.length;
+      if (total === 0) {
+        $("stats").innerHTML =
+          '<p class="vazio">Nenhum jogo cadastrado para gerar estatísticas.</p>';
+        return;
+      }
+
+      const concluidos = catalogo.filter((j) => j.concluido).length;
+      const porcentagem = ((concluidos / total) * 100).toFixed(1);
+
+      // Jogos por plataforma (vazia vira "Desconhecida")
+      const plataformas = {};
+      catalogo.forEach((j) => {
+        const p = j.plataforma || "Desconhecida";
+        plataformas[p] = (plataformas[p] || 0) + 1;
+      });
+
+      const linhas = Object.entries(plataformas).map(([nome, qtd]) => `
+        <li>
+          <span class="ranking-nome">${esc(nome)}</span>
+          <span class="ranking-barra"><i style="width:${(qtd / total) * 100}%"></i></span>
+          <span class="ranking-qtd">${qtd}</span>
+        </li>`).join("");
+
+      const segmentos = catalogo.map((j) =>
+        `<span class="seg ${j.concluido ? "ok" : ""}" title="${esc(j.nome)}"></span>`).join("");
+
+      $("stats").innerHTML = `
+        <p class="progresso-resumo"><strong>Jogos concluídos: ${concluidos} (${porcentagem}%)</strong></p>
+        <div class="barra" role="img" aria-label="${concluidos} de ${total} jogos concluídos">${segmentos}</div>
+        <p class="progresso-resumo" style="margin-top:0.75rem">
+          Total de jogos cadastrados: ${total}. Jogos pendentes: ${total - concluidos}.
+        </p>
+        <div class="stats-grupos">
+          <div>
+            <h3>Jogos por plataforma</h3>
+            <ul class="ranking">${linhas}</ul>
+          </div>
+        </div>`;
+    }
+
+    function desenhar() {
+      desenharStats();
+      desenharLista();
+    }
+
+    desenhar();
+  </script>
+</body>
+</html>
